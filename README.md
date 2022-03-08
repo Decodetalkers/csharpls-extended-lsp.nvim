@@ -12,27 +12,66 @@ is then loaded as a scratch buffer with name set to `/$metadata$/..`. This allow
 then allows jumping to the buffer based on name or from quickfix list, because it's
 loaded.
 
-Definitions from within `$metadata$` documents also work, though require 1 more
-additional request per definition, [since as it is right now, `textDocument/definition`
-doesn't properly return results when called from `$metadata$` document](https://github.com/OmniSharp/omnisharp-roslyn/issues/2238).
-Because of that, this plugin additionally on response checks if request was made from `$metadata$` and
-does another request to `o#/v2/gotodefinition` which works properly. Response from this
-is handled as as described above.
+csharpls use [ILSpy/ICSharpCode.Decompiler ](https://github.com/icsharpcode/ILSpy) to decompile code. So just get the uri and We can receive decompile sources from csahrpls
+
+### api
+
+The api is "csharp/metadata", in neovim ,you can request it like
+
+```lua 
+  local result, err = client.request_sync("csharp/metadata", params, 10000)
+```
+
+#### sender
+You need to send a uri, it is like 
+
+**csharp:/metadata/projects/trainning2/assemblies/System.Console/symbols/System.Console.cs**
+
+In neovim, it will be result(s) from vim.lsp.handles["textDocument/definition"]
+
+and the key of uri is the key, 
+
+The key to send is like
+
+```lua 
+local params = {
+	timeout = 5000,
+	textDocument = {
+		uri = uri,
+	}
+}
+```
+
+The key of textDocument is needed. And timeout is just for neovim. It is the same if is expressed by json.
+
+### receiver
+
+The object received is like 
+
+```lua 
+{
+	projectName = "csharp-test",
+	assemblyName = "System.Runtime",
+	symbolName = "System.String",
+	source = "using System.Buffers;\n ...."
+}
+```
+
+And In neovim, You receive the "result" above, you can get the decompile source from 
+
+```lua
+
+local result, err = client.request_sync("csharp/metadata", params, 10000)
+local source
+if not err then
+	source = result.result.source	
+end
+```
 
 ## Usage
 
-Since some functionality is missing in 0.5.1 heres a table with provided
-functions and for which versions they can be used:
 
-| Command  | Neovim 0.5.1 | Neovim Nightly |
-| ------------- | ------------- | ------------- |
-| vim.lsp.buf.definition() with updated global handlers  | Not working  | OK |
-| require('omnisharp_extended').lsp_definitions()  | OK  | OK (but unnecessary) |
-| require('omnisharp_extended').telescope_lsp_definitions()  | OK  | OK |
-
-See below for instructions based on version.
-
-### For Neovim **nightly**
+### For Neovim >= 0.5
 
 To use this plugin all that needs to be done is for the nvim lsp handler for
 `textDocument/definition` be overriden with one provided by this plugin.
@@ -46,7 +85,7 @@ Then to that config add `handlers` with custom handler from this plugin.
 ```lua
 local pid = vim.fn.getpid()
 -- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = "/path/to/csahrpls"
+local omnisharp_bin = "/path/to/csharp_ls"
 -- on Windows
 -- local omnisharp_bin = "/path/to/omnisharp/OmniSharp.exe"
 
@@ -58,7 +97,7 @@ local config = {
   -- rest of your settings
 }
 
-require'lspconfig'.omnisharp.setup(config)
+require'lspconfig'.csharp_ls.setup(config)
 ```
 
 ### For Neovim 0.5.1
@@ -69,7 +108,7 @@ telescope method explained in the next section or to use `lsp_definitions()` fun
 mimics standard definitions behavior.
 
 ```vimscript
-nnoremap gd <cmd>lua require('omnisharp_extended').lsp_definitions()<cr>
+nnoremap gd <cmd>lua require('csharp_ls_extended').lsp_definitions()<cr>
 ```
 
 ### Thanks to [omnisharp-extended-lsp.nvim](https://github.com/Hoffs/omnisharp-extended-lsp.nvim) 
