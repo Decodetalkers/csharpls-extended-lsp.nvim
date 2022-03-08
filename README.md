@@ -71,3 +71,6 @@ mimics standard definitions behavior.
 ```vimscript
 nnoremap gd <cmd>lua require('omnisharp_extended').lsp_definitions()<cr>
 ```
+
+### Thanks to [omnisharp-extended-lsp.nvim](https://github.com/Hoffs/omnisharp-extended-lsp.nvim) 
+### Thanks to the help of [csharp-language-server](https://github.com/razzmatazz/csharp-language-server)
