@@ -1,4 +1,4 @@
-# omnisharp-extended-lsp.nvim
+# csharpls-extended-lsp.nvim
 
 Extended `textDocument/definition` handler that handles assembly/decompilation
 loading for `$metadata$` documents.
@@ -46,15 +46,15 @@ Then to that config add `handlers` with custom handler from this plugin.
 ```lua
 local pid = vim.fn.getpid()
 -- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = "/path/to/omnisharp-repo/run"
+local omnisharp_bin = "/path/to/csahrpls"
 -- on Windows
 -- local omnisharp_bin = "/path/to/omnisharp/OmniSharp.exe"
 
 local config = {
   handlers = {
-    ["textDocument/definition"] = require('omnisharp_extended').handler,
+    ["textDocument/definition"] = require('csharpls_extended').handler,
   },
-  cmd = { omnisharp_bin, '--languageserver' , '--hostPID', tostring(pid) },
+  cmd = { csharpls },
   -- rest of your settings
 }
 
@@ -71,15 +71,3 @@ mimics standard definitions behavior.
 ```vimscript
 nnoremap gd <cmd>lua require('omnisharp_extended').lsp_definitions()<cr>
 ```
-
-### Telescope
-
-This handler can also be used for [nvim-telescope](https://github.com/nvim-telescope/telescope.nvim):
-
-```vimscript
-nnoremap gd <cmd>lua require('omnisharp_extended').telescope_lsp_definitions()<cr>
-```
-
-## Important notes
-
-- !! Plugin searches for LSP server configured with the name `omnisharp`, so if your server is configured using a different name, this will not work out of the box.
