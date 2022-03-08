@@ -13,7 +13,7 @@ M.defolderize = function(str)
 end
 
 M.matcher = "metadata[/\\]projects[/\\](.*)[/\\]assemblies[/\\](.*)[/\\]symbols[/\\](.*).cs"
-M.matcher_meta_uri = "(metadata%$[/\\].*)"
+--M.matcher_meta_uri = "(metadata%$[/\\].*)"
 
 -- it return a nil?
 M.parse_meta_uri = function(uri)
@@ -21,8 +21,8 @@ M.parse_meta_uri = function(uri)
     --local found, _, project, assembly, symbol = string.find(uri, M.matcher)
     local found, _, project, assembly, symbol = string.find(uri, M.matcher)
     --print(found)
-    if found~=nil then
-	return found, M.defolderize(project), M.defolderize(assembly), M.defolderize(symbol)
+    if found ~= nil then
+        return found, M.defolderize(project), M.defolderize(assembly), M.defolderize(symbol)
     end
     return nil
 end
@@ -80,24 +80,26 @@ M.get_metadata = function(locations)
 
     local fetched = {}
     for _, loc in pairs(locations) do
+        -- url, get the message from csharp_ls
         local uri = utils.urldecode(loc.uri)
-	--print(uri)
+        --print(uri)
+        --if has get messages
         local is_meta, _, _, _ = M.parse_meta_uri(uri)
-	--print(is_meta,project,assembly,symbol)
+        --print(is_meta,project,assembly,symbol)
         if is_meta then
-	    --print(uri)
+            --print(uri)
             local params = {
-		textDocument = {
-                --timeout = 5000,
-		    uri = uri
-		}
+                timeout = 5000,
+                textDocument = {
+                    uri = uri,
+                },
             }
-	    --print("ssss")
+            --print("ssss")
             -- request_sync?
             -- if async, need to trigger when all are finished
             local result, err = client.request_sync("csharp/metadata", params, 10000)
-	    --print(result.result.source)
-	    if not err then
+            --print(result.result.source)
+            if not err then
                 local bufnr, name = M.buf_from_metadata(result.result, client.id)
                 -- change location name to the one returned from metadata
                 -- alternative is to open buffer under location uri
@@ -113,8 +115,6 @@ M.get_metadata = function(locations)
 
     return fetched
 end
-
-
 
 M.textdocument_definition_to_locations = function(result)
     if not vim.tbl_islist(result) then
@@ -143,7 +143,6 @@ M.handle_locations = function(locations)
 end
 
 M.handler = function(err, result, ctx, config)
-
     local locations = M.textdocument_definition_to_locations(result)
     local handled = M.handle_locations(locations)
     if not handled then
