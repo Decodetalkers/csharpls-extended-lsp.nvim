@@ -85,7 +85,6 @@ Then to that config add `handlers` with custom handler from this plugin.
 ```lua
 local pid = vim.fn.getpid()
 -- On linux/darwin if using a release build, otherwise under scripts/OmniSharp(.Core)(.cmd)
-local omnisharp_bin = "/path/to/csharp_ls"
 -- on Windows
 -- local omnisharp_bin = "/path/to/omnisharp/OmniSharp.exe"
 
