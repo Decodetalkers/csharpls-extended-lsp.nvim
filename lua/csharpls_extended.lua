@@ -129,7 +129,7 @@ M.handle_locations = function(locations, offset_encoding)
 
     if not vim.tbl_isempty(fetched) then
         if #locations > 1 then
-            utils.set_qflist_locations(locations)
+            utils.set_qflist_locations(locations, offset_encoding)
             vim.api.nvim_command("copen")
             return true
         else

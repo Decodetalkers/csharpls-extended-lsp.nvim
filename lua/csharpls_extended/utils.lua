@@ -42,6 +42,9 @@ U.get_or_create_buf = function(name)
         else
             if bufname == name then
                 return buf
+            -- Match a bufname like C:\System.Console
+            elseif string.find(string.gsub(bufname, "%u:\\", "/"), name) then
+                return buf
             end
         end
     end
@@ -51,8 +54,8 @@ U.get_or_create_buf = function(name)
     return bufnr
 end
 
-U.set_qflist_locations = function(locations)
-    local items = vim.lsp.util.locations_to_items(locations)
+U.set_qflist_locations = function(locations, offset_encoding)
+    local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
     vim.fn.setqflist({}, " ", {
         title = "Language Server",
         items = items,
