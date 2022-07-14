@@ -124,7 +124,7 @@ M.textdocument_definition_to_locations = function(result)
     return result
 end
 
-M.handle_locations = function(locations)
+M.handle_locations = function(locations, offset_encoding)
     local fetched = M.get_metadata(locations)
 
     if not vim.tbl_isempty(fetched) then
@@ -134,7 +134,7 @@ M.handle_locations = function(locations)
             return true
         else
             -- utils.jump_to_location(locations[1], fetched[locations[1].uri].bufnr)
-            vim.lsp.util.jump_to_location(locations[1])
+            vim.lsp.util.jump_to_location(locations[1], offset_encoding)
             return true
         end
     else
@@ -143,8 +143,12 @@ M.handle_locations = function(locations)
 end
 
 M.handler = function(err, result, ctx, config)
+    -- fixes error for "jump_to_location must be called with valid offset
+    -- encoding"
+    -- https://github.com/neovim/neovim/issues/14090#issuecomment-1012005684
+    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
     local locations = M.textdocument_definition_to_locations(result)
-    local handled = M.handle_locations(locations)
+    local handled = M.handle_locations(locations, offset_encoding)
     if not handled then
         return vim.lsp.handlers["textDocument/definition"](err, result, ctx, config)
     end
