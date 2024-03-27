@@ -1,10 +1,11 @@
 local utils = require("csharpls_extended.utils")
 --local lsp_util = require 'vim.lsp.util'
 
---local pickers = require("telescope.pickers")
---local finders = require("telescope.finders")
---local conf = require("telescope.config").values
-
+local finders = require("telescope.finders")
+local conf = require("telescope.config").values
+local pickers = require "telescope.pickers"
+local lspconfig = require "telescope.config"
+local make_entry = require "telescope.make_entry"
 local M = {}
 
 M.defolderize = function(str)
@@ -142,6 +143,23 @@ M.handle_locations = function(locations, offset_encoding)
     end
 end
 
+local function handle_locations_telescope(locations, offset_encoding)
+    local fetched = M.get_metadata(locations)
+
+    if not vim.tbl_isempty(fetched) then
+        if #locations > 1 then
+            utils.set_qflist_locations(locations, offset_encoding)
+            return true
+        else
+            -- utils.jump_to_location(locations[1], fetched[locations[1].uri].bufnr)
+            vim.lsp.util.jump_to_location(locations[1], offset_encoding)
+            return true
+        end
+    else
+        return false
+    end
+end
+
 M.handler = function(err, result, ctx, config)
     -- fixes error for "jump_to_location must be called with valid offset
     -- encoding"
@@ -153,6 +171,75 @@ M.handler = function(err, result, ctx, config)
         return vim.lsp.handlers["textDocument/definition"](err, result, ctx, config)
     end
 end
+
+local function telecope_handle(results, offset_encoding)
+    local new_results = M.textdocument_definition_to_locations(results)
+    handle_locations_telescope(new_results, offset_encoding)
+    return new_results
+end
+
+M.telescope_definition_extension = function(err, result, ctx, _, action, params, opts)
+    if err then
+        vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+        return
+    end
+
+    if result == nil then
+        return
+    end
+
+    local flattened_results = {}
+    if not vim.tbl_islist(result) then
+        flattened_results = { result }
+    end
+    vim.list_extend(flattened_results, result)
+
+    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
+
+    flattened_results = telecope_handle(flattened_results, offset_encoding)
+
+    if vim.tbl_isempty(flattened_results) then
+        return
+    elseif #flattened_results == 1 and opts.jump_type ~= "never" then
+        local current_uri = params.textDocument.uri
+        local target_uri = flattened_results[1].uri or flattened_results[1].targetUri
+        if current_uri ~= target_uri then
+            local cmd
+            local file_path = vim.uri_to_fname(target_uri)
+            if opts.jump_type == "tab" then
+                cmd = "tabedit"
+            elseif opts.jump_type == "split" then
+                cmd = "new"
+            elseif opts.jump_type == "vsplit" then
+                cmd = "vnew"
+            elseif opts.jump_type == "tab drop" then
+                cmd = "tab drop"
+            end
+
+            if cmd then
+                vim.cmd(string.format("%s %s", cmd, file_path))
+            end
+        end
+
+        vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
+    else
+        local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
+        pickers
+            .new(opts, {
+                prompt_title = title,
+                finder = finders.new_table {
+                    results = locations,
+                    entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+                },
+                previewer = conf.qflist_previewer(opts),
+                sorter = conf.generic_sorter(opts),
+                push_cursor_on_edit = true,
+                push_tagstack_on_edit = true,
+            })
+            :find()
+    end
+end
+
 
 M.lsp_definitions = function()
     local client = M.get_csharpls_client()
