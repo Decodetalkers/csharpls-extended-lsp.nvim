@@ -100,6 +100,8 @@ local config = {
 require'lspconfig'.csharp_ls.setup(config)
 ```
 
+*Note: Avoid using `telescope.lsp_definitions` and use `vim.lsp.buf.definition` until [this PR](https://github.com/Decodetalkers/csharpls-extended-lsp.nvim/pull/11) is merged in.
+
 ### For Neovim 0.5.1
 
 Due to the fact that in 0.5.1 request params are not available is handler
