@@ -66,7 +66,7 @@ U.jump_to_location = function(location, bufnr)
     if not bufnr then
         -- if bufnr is provided, assume its configured
         bufnr = vim.uri_to_bufnr(location.uri)
-        vim.api.nvim_buf_set_option(0, "buflisted", true)
+        vim.api.nvim_set_option_value("buflisted", true, { buf = 0 })
     end
 
     vim.api.nvim_set_current_buf(bufnr)

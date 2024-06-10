@@ -29,7 +29,7 @@ end
 
 -- get client
 M.get_csharpls_client = function()
-    local clients = vim.lsp.buf_get_clients(0)
+    local clients = vim.lsp.get_clients({ buffer = 0 })
     for _, client in pairs(clients) do
         if client.name == "csharp_ls" then
             return client
@@ -50,13 +50,13 @@ M.buf_from_metadata = function(result, client_id)
     -- this will be /$metadata$/...
     local bufnr = utils.get_or_create_buf(file_name)
     -- TODO: check if bufnr == 0 -> error
-    vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-    vim.api.nvim_buf_set_option(bufnr, "readonly", false)
+    vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
+    vim.api.nvim_set_option_value("readonly", false, { buf = bufnr })
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, source_lines)
-    vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-    vim.api.nvim_buf_set_option(bufnr, "readonly", true)
-    vim.api.nvim_buf_set_option(bufnr, "filetype", "cs")
-    vim.api.nvim_buf_set_option(bufnr, "modified", false)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = bufnr })
+    vim.api.nvim_set_option_value("readonly", true, { buf = bufnr })
+    vim.api.nvim_set_option_value("filetype", "cs", { buf = bufnr })
+    vim.api.nvim_set_option_value("modified", false, { buf = bufnr })
 
     -- attach lsp client ??
     vim.lsp.buf_attach_client(bufnr, client_id)
@@ -75,7 +75,7 @@ M.get_metadata = function(locations)
     local client = M.get_csharpls_client()
     if not client then
         -- TODO: Error?
-        return false
+        return {}
     end
 
     local fetched = {}
@@ -94,7 +94,6 @@ M.get_metadata = function(locations)
                     uri = uri,
                 },
             }
-            --print("ssss")
             -- request_sync?
             -- if async, need to trigger when all are finished
             local result, err = client.request_sync("csharp/metadata", params, 10000)
@@ -117,7 +116,7 @@ M.get_metadata = function(locations)
 end
 
 M.textdocument_definition_to_locations = function(result)
-    if not vim.tbl_islist(result) then
+    if not vim.islist(result) then
         return { result }
     end
 
