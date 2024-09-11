@@ -104,6 +104,7 @@ M.get_metadata = function(locations)
                 -- alternative is to open buffer under location uri
                 -- not sure which one is better
                 loc.uri = "file://" .. name
+                loc.bufnr = bufnr
                 fetched[loc.uri] = {
                     bufnr = bufnr,
                     range = loc.range,

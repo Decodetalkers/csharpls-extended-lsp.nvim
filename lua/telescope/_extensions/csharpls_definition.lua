@@ -5,7 +5,9 @@ local pickers = require("telescope.pickers")
 local conf = require("telescope.config").values
 local finders = require("telescope.finders")
 
-local M = {};
+local M = {
+    title = "csharpls definition"
+};
 
 M.telescope_handle_location = function(locations, offset_encoding, opts)
     local fetched = csharpls_extend.get_metadata(locations)
@@ -19,12 +21,13 @@ M.telescope_handle_location = function(locations, offset_encoding, opts)
         return
     end
     locations = vim.lsp.util.locations_to_items(locations, offset_encoding)
+
     pickers
         .new(opts, {
-            prompt_title = "csharpls definition",
+            prompt_title = M.title,
             finder = finders.new_table({
                 results = locations,
-                entry_maker = make_entry.gen_from_quickfix(opts),
+                entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
             }),
             previewer = conf.qflist_previewer(opts),
             sorter = conf.generic_sorter(opts),
