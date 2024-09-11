@@ -71,8 +71,6 @@ end
 ## Usage
 
 
-### For Neovim >= 0.5
-
 To use this plugin all that needs to be done is for the nvim lsp handler for
 `textDocument/definition` be overriden with one provided by this plugin.
 
@@ -100,16 +98,13 @@ local config = {
 require'lspconfig'.csharp_ls.setup(config)
 ```
 
-### For Neovim 0.5.1
 
-Due to the fact that in 0.5.1 request params are not available is handler
-response a function to go to definitions has to be invoked manually. One option is to use
-telescope method explained in the next section or to use `lsp_definitions()` function which
-mimics standard definitions behavior.
+## Telescope
 
-```vimscript
-nnoremap gd <cmd>lua require('csharp_ls_extended').lsp_definitions()<cr>
+```lua
+require("telescope").load_extension("csharpls_definition")
 ```
+
 
 ### Thanks to [omnisharp-extended-lsp.nvim](https://github.com/Hoffs/omnisharp-extended-lsp.nvim) 
 ### Thanks to the help of [csharp-language-server](https://github.com/razzmatazz/csharp-language-server)
