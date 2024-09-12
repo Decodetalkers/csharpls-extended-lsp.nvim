@@ -8,7 +8,6 @@ M.defolderize = function(str)
 end
 
 M.matcher = "metadata[/\\]projects[/\\](.*)[/\\]assemblies[/\\](.*)[/\\]symbols[/\\](.*).cs"
---M.matcher_meta_uri = "(metadata%$[/\\].*)"
 
 -- it return a nil?
 M.parse_meta_uri = function(uri)
@@ -69,7 +68,6 @@ M.get_metadata = function(locations, offset_encoding)
     for _, loc in pairs(locations) do
         -- url, get the message from csharp_ls
         local uri = utils.urldecode(loc.uri)
-        --print(uri)
         --if has get messages
         local is_meta, _, _, _ = M.parse_meta_uri(uri)
         if not is_meta then
