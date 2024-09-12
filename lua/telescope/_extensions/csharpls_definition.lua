@@ -45,7 +45,7 @@ M.telescope_handle = function(err, result, ctx, config, opts)
     M.telescope_handle_location(locations, offset_encoding, opts)
 end
 
-M.csharpls_decompile_telescope = function(opts)
+M.csharpls_telescope = function(opts)
     local client = csharpls_extend.get_csharpls_client()
     if client then
         local params = vim.lsp.util.make_position_params()
@@ -60,6 +60,6 @@ end
 
 return require("telescope").register_extension({
     exports = {
-        csharpls_decompile_definition = M.csharpls_decompile_telescope,
+        csharpls_definition = M.csharpls_telescope,
     },
 })

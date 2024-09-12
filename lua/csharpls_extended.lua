@@ -80,36 +80,43 @@ M.get_metadata = function(locations, offset_encoding)
         --print(uri)
         --if has get messages
         local is_meta, _, _, _ = M.parse_meta_uri(uri)
-        --print(is_meta,project,assembly,symbol)
-        if is_meta then
-            --print(uri)
-            local params = {
-                timeout = 5000,
-                textDocument = {
-                    uri = uri,
-                },
-            }
-            -- request_sync?
-            -- if async, need to trigger when all are finished
-            local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
-            --print(result.result.source)
-            if not err and result ~= nil then
-                local bufnr, name = M.buf_from_metadata(result.result, client.id)
-                -- change location name to the one returned from metadata
-                -- alternative is to open buffer under location uri
-                -- not sure which one is better
-                loc.uri = "file://" .. name
-                table.insert(fetched, {
-                    filename = vim.uri_to_fname(loc.uri),
-                    text = "",
-                    lnum = loc.range.start.line + 1,
-                    col = loc.range.start.character + 1,
-                    bufnr = bufnr,
-                    range = loc.range,
-                    uri = loc.uri,
-                })
-            end
+        if not is_meta then
+            table.insert(fetched, {
+                filename = vim.uri_to_fname(loc.uri),
+                lnum = loc.range.start.line + 1,
+                col = loc.range.start.character + 1,
+                range = loc.range,
+                uri = loc.uri,
+            })
+            goto continue
         end
+        --print(uri)
+        local params = {
+            timeout = 5000,
+            textDocument = {
+                uri = uri,
+            },
+        }
+        -- request_sync?
+        -- if async, need to trigger when all are finished
+        local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
+        --print(result.result.source)
+        if not err and result ~= nil then
+            local bufnr, name = M.buf_from_metadata(result.result, client.id)
+            -- change location name to the one returned from metadata
+            -- alternative is to open buffer under location uri
+            -- not sure which one is better
+            loc.uri = "file://" .. name
+            table.insert(fetched, {
+                filename = vim.uri_to_fname(loc.uri),
+                lnum = loc.range.start.line + 1,
+                col = loc.range.start.character + 1,
+                bufnr = bufnr,
+                range = loc.range,
+                uri = loc.uri,
+            })
+        end
+        ::continue::
     end
     fetched = vim.tbl_deep_extend("force", fetched, vim.lsp.util.locations_to_items(fetched, offset_encoding))
 

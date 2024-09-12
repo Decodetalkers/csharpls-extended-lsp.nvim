@@ -102,7 +102,7 @@ require'lspconfig'.csharp_ls.setup(config)
 ## Telescope
 
 ```lua
-require("telescope").load_extension("csharpls_decompile_definition")
+require("telescope").load_extension("csharpls_definition")
 ```
 
 
