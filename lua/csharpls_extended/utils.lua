@@ -4,6 +4,8 @@ U.hex_to_char = function(x)
     return string.char(tonumber(x, 16))
 end
 
+---@param url string | nil
+---@return string | nil
 U.urldecode = function(url)
     if url == nil then
         return

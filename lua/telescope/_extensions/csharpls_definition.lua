@@ -36,7 +36,7 @@ M.telescope_handle_location = function(locations, offset_encoding, opts)
         :find()
 end
 
-M.telescope_handle = function(err, result, ctx, config, opts)
+M.telescope_handle = function(_, result, ctx, _, opts)
     -- fixes error for "jump_to_location must be called with valid offset
     -- encoding"
     -- https://github.com/neovim/neovim/issues/14090#issuecomment-1012005684

@@ -1,10 +1,16 @@
 self = false
 
 ignore = {
-  "631",  -- max_line_length
+    "631", -- max_line_length
 }
 
 -- Global objects defined by the C code
 globals = {
-  "vim",
+    "vim",
+}
+read_globals = {
+    "vim",
+    "describe",
+    "it",
+    "assert"
 }

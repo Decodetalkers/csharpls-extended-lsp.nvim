@@ -2,27 +2,38 @@ local utils = require("csharpls_extended.utils")
 
 local M = {}
 
-M.defolderize = function(str)
-    -- private static string Folderize(string path) => string.Join("/", path.Split('.'));
-    return string.gsub(str, "[/\\]", ".")
+-- M.defolderize = function(str)
+--     -- private static string Folderize(string path) => string.Join("/", path.Split('.'));
+--     return string.gsub(str, "[/\\]", ".")
+-- end
+
+M.csharp_host = "csharp:/metadata";
+
+M.client_name = "csharp_ls"
+
+-- M.matcher = "metadata[/\\]projects[/\\](.*)[/\\]assemblies[/\\](.*)[/\\]symbols[/\\](.*).cs"
+
+---@param url string
+---@param start string
+---@return boolean
+function M.starts(url, start)
+    return string.sub(url, 1, string.len(start)) == start
 end
 
-M.matcher = "metadata[/\\]projects[/\\](.*)[/\\]assemblies[/\\](.*)[/\\]symbols[/\\](.*).cs"
-
--- it return a nil?
-M.parse_meta_uri = function(uri)
-    local found, _, project, assembly, symbol = string.find(uri, M.matcher)
-    if found ~= nil then
-        return found, M.defolderize(project), M.defolderize(assembly), M.defolderize(symbol)
+---@param uri string | nil
+---@return boolean
+M.is_lsp_url = function(uri)
+    if uri == nil then
+        return true
     end
-    return nil
+    return M.starts(uri, M.csharp_host)
 end
 
 -- get client
 M.get_csharpls_client = function()
     local clients = vim.lsp.get_clients({ buffer = 0 })
     for _, client in pairs(clients) do
-        if client.name == "csharp_ls" then
+        if client.name == M.client_name then
             return client
         end
     end
@@ -69,7 +80,7 @@ M.get_metadata = function(locations, offset_encoding)
         -- url, get the message from csharp_ls
         local uri = utils.urldecode(loc.uri)
         --if has get messages
-        local is_meta, _, _, _ = M.parse_meta_uri(uri)
+        local is_meta = M.is_lsp_url(uri)
         if not is_meta then
             table.insert(fetched, {
                 filename = vim.uri_to_fname(loc.uri),
