@@ -12,10 +12,7 @@ M.matcher = "metadata[/\\]projects[/\\](.*)[/\\]assemblies[/\\](.*)[/\\]symbols[
 
 -- it return a nil?
 M.parse_meta_uri = function(uri)
-    --print(uri)
-    --local found, _, project, assembly, symbol = string.find(uri, M.matcher)
     local found, _, project, assembly, symbol = string.find(uri, M.matcher)
-    --print(found)
     if found ~= nil then
         return found, M.defolderize(project), M.defolderize(assembly), M.defolderize(symbol)
     end
@@ -56,11 +53,6 @@ M.buf_from_metadata = function(result, client_id)
     -- attach lsp client ??
     vim.lsp.buf_attach_client(bufnr, client_id)
 
-    -- vim.api.nvim_win_set_buf(0, bufnr)
-
-    -- set_cursor is (1, 0) indexed, where LSP range is 0 indexed, so add 1 to line number
-    -- vim.api.nvim_win_set_cursor(0, { range.start.line+1, range.start.character })
-    --
     return bufnr, file_name
 end
 
@@ -90,7 +82,6 @@ M.get_metadata = function(locations, offset_encoding)
             })
             goto continue
         end
-        --print(uri)
         local params = {
             timeout = 5000,
             textDocument = {
