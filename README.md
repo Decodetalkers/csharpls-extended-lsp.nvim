@@ -72,7 +72,7 @@ end
 
 
 To use this plugin all that needs to be done is for the nvim lsp handler for
-`textDocument/definition` be overriden with one provided by this plugin.
+`textDocument/definition` be overridden with one provided by this plugin.
 
 If using `lspconfig` this can be done like this:
 
