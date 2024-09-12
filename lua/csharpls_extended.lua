@@ -66,7 +66,7 @@ end
 
 -- Gets metadata for all locations with $metadata$
 -- Returns: boolean whether any requests were made
-M.get_metadata = function(locations)
+M.get_metadata = function(locations, offset_encoding)
     local client = M.get_csharpls_client()
     if not client then
         -- TODO: Error?
@@ -99,14 +99,19 @@ M.get_metadata = function(locations)
                 -- alternative is to open buffer under location uri
                 -- not sure which one is better
                 loc.uri = "file://" .. name
-                loc.bufnr = bufnr
-                fetched[loc.uri] = {
+                table.insert(fetched, {
+                    filename = vim.uri_to_fname(loc.uri),
+                    text = "",
+                    lnum = loc.range.start.line + 1,
+                    col = loc.range.start.character + 1,
                     bufnr = bufnr,
                     range = loc.range,
-                }
+                    uri = loc.uri,
+                })
             end
         end
     end
+    fetched = vim.tbl_deep_extend("force", fetched, vim.lsp.util.locations_to_items(fetched, offset_encoding))
 
     return fetched
 end
@@ -120,7 +125,7 @@ M.textdocument_definition_to_locations = function(result)
 end
 
 M.handle_locations = function(locations, offset_encoding)
-    local fetched = M.get_metadata(locations)
+    local fetched = M.get_metadata(locations, offset_encoding)
 
     if not vim.tbl_isempty(fetched) then
         if #locations > 1 then

@@ -10,23 +10,22 @@ local M = {
 };
 
 M.telescope_handle_location = function(locations, offset_encoding, opts)
-    local fetched = csharpls_extend.get_metadata(locations)
+    local fetched = csharpls_extend.get_metadata(locations, offset_encoding)
 
     if vim.tbl_isempty(fetched) then
         vim.notify("No locations found")
         return
     end
     if #locations == 1 then
-        vim.lsp.util.jump_to_location(locations[1], offset_encoding)
+        vim.lsp.util.jump_to_location(fetched[1], offset_encoding)
         return
     end
-    locations = vim.lsp.util.locations_to_items(locations, offset_encoding)
 
     pickers
         .new(opts, {
             prompt_title = M.title,
             finder = finders.new_table({
-                results = locations,
+                results = fetched,
                 entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
             }),
             previewer = conf.qflist_previewer(opts),
