@@ -19,7 +19,7 @@ csharpls use [ILSpy/ICSharpCode.Decompiler ](https://github.com/icsharpcode/ILSp
 The api is "csharp/metadata", in neovim ,you can request it like
 
 ```lua 
-  local result, err = client.request_sync("csharp/metadata", params, 10000)
+  local result, err = client.request_sync("csharp/metadata", params, 10000, 0) -- 0 is for current buffer
 ```
 
 #### sender
@@ -61,7 +61,7 @@ And In neovim, You receive the "result" above, you can get the decompile source 
 
 ```lua
 
-local result, err = client.request_sync("csharp/metadata", params, 10000)
+local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
 local source
 if not err then
 	source = result.result.source	
@@ -102,7 +102,7 @@ require'lspconfig'.csharp_ls.setup(config)
 ## Telescope
 
 ```lua
-require("telescope").load_extension("csharpls_definition")
+require("telescope").load_extension("csharpls_decompile_definition")
 ```
 
 

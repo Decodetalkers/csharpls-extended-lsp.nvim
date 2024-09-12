@@ -91,7 +91,7 @@ M.get_metadata = function(locations)
             }
             -- request_sync?
             -- if async, need to trigger when all are finished
-            local result, err = client.request_sync("csharp/metadata", params, 10000)
+            local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
             --print(result.result.source)
             if not err and result ~= nil then
                 local bufnr, name = M.buf_from_metadata(result.result, client.id)
