@@ -9,6 +9,9 @@ local M = {
     title = "csharpls definition"
 };
 
+--- @param locations lsp.Location[] | lsp.LocationLink[]
+--- @param offset_encoding string
+--- @param opts any
 M.telescope_handle_location = function(locations, offset_encoding, opts)
     local fetched = csharpls_extend.get_metadata(locations, offset_encoding)
 

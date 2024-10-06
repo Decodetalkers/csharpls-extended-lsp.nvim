@@ -7,7 +7,7 @@ local M = {}
 --     return string.gsub(str, "[/\\]", ".")
 -- end
 
-M.csharp_host = "csharp:/metadata";
+M.csharp_host = "csharp:/metadata"
 
 M.client_name = "csharp_ls"
 
@@ -30,6 +30,7 @@ M.is_lsp_url = function(uri)
 end
 
 -- get client
+--- @return vim.lsp.Client | nil
 M.get_csharpls_client = function()
     local clients = vim.lsp.get_clients({ buffer = 0 })
     for _, client in pairs(clients) do
@@ -41,6 +42,15 @@ M.get_csharpls_client = function()
     return nil
 end
 
+--- @class buf_from_metadata.result
+--- @inlinedoc
+--- @field source string
+--- @field assemblyName string
+---
+--- @param result buf_from_metadata.result
+--- @param client_id integer
+---
+--- @return integer
 M.buf_from_metadata = function(result, client_id)
     local normalized = string.gsub(result.source, "\r\n", "\n")
     local source_lines = utils.split(normalized, "\n")
@@ -63,7 +73,7 @@ M.buf_from_metadata = function(result, client_id)
     -- attach lsp client ??
     vim.lsp.buf_attach_client(bufnr, client_id)
 
-    return bufnr, file_name
+    return bufnr
 end
 
 --- @class handle_locations.ret
@@ -115,11 +125,11 @@ M.get_metadata = function(locations, offset_encoding)
         local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
         --print(result.result.source)
         if not err and result ~= nil then
-            local bufnr, name = M.buf_from_metadata(result.result, client.id)
+            local bufnr = M.buf_from_metadata(result.result, client.id)
             -- change location name to the one returned from metadata
             -- alternative is to open buffer under location uri
             -- not sure which one is better
-            loc.uri = "file://" .. name
+            loc.uri = vim.uri_from_bufnr(bufnr)
             table.insert(fetched, {
                 filename = vim.uri_to_fname(loc.uri),
                 lnum = loc.range.start.line + 1,

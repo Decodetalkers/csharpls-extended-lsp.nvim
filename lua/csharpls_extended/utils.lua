@@ -29,6 +29,9 @@ U.split = function(str, delimiter)
     return result
 end
 
+--- used to find the buffer id
+--- @param name string
+--- @return integer
 U.get_or_create_buf = function(name)
     local buffers = vim.api.nvim_list_bufs()
     for _, buf in pairs(buffers) do
