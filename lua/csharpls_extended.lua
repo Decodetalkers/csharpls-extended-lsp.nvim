@@ -66,8 +66,21 @@ M.buf_from_metadata = function(result, client_id)
     return bufnr, file_name
 end
 
+--- @class handle_locations.ret
+--- @inlinedoc
+--- @field filename string
+--- @field lnum integer
+--- @field col integer
+--- @field range lsp.Range
+--- @field uri lsp.URI
+--- @field text string
+--- @field user_data lsp.Location|lsp.LocationLink
+---
 -- Gets metadata for all locations with $metadata$
 -- Returns: boolean whether any requests were made
+---@param locations lsp.Location[]|lsp.LocationLink[]
+---@param offset_encoding string offset_encoding for locations utf-8|utf-16|utf-32
+---@return handle_locations.ret[]
 M.get_metadata = function(locations, offset_encoding)
     local client = M.get_csharpls_client()
     if not client then
@@ -123,6 +136,8 @@ M.get_metadata = function(locations, offset_encoding)
     return fetched
 end
 
+--- @param result lsp.Location | lsp.Location[]
+--- @return lsp.Location[]
 M.textdocument_definition_to_locations = function(result)
     if not vim.islist(result) then
         return { result }
@@ -131,16 +146,20 @@ M.textdocument_definition_to_locations = function(result)
     return result
 end
 
+--- The location should first handled by locations_to_items
+---@param locations lsp.Location[]|lsp.LocationLink[]
+---@param offset_encoding string offset_encoding for locations utf-8|utf-16|utf-32
+---
+--- @return boolean
 M.handle_locations = function(locations, offset_encoding)
     local fetched = M.get_metadata(locations, offset_encoding)
 
     if not vim.tbl_isempty(fetched) then
         if #locations > 1 then
-            utils.set_qflist_locations(locations, offset_encoding)
+            utils.set_qflist_locations(fetched)
             vim.api.nvim_command("copen")
             return true
         else
-            -- utils.jump_to_location(locations[1], fetched[locations[1].uri].bufnr)
             vim.lsp.util.jump_to_location(locations[1], offset_encoding)
             return true
         end

@@ -56,11 +56,11 @@ U.get_or_create_buf = function(name)
     return bufnr
 end
 
-U.set_qflist_locations = function(locations, offset_encoding)
-    local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
+--- @param locations lsp.Location[]
+U.set_qflist_locations = function(locations)
     vim.fn.setqflist({}, " ", {
         title = "Language Server",
-        items = items,
+        items = locations,
     })
 end
 
