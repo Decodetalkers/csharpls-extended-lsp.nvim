@@ -1,7 +1,5 @@
 # csharpls-extended-lsp.nvim
 
-## Note: now csharpls-extended-lsp.nvim only support nvim >= 0.11
-
 Extended `textDocument/definition` and `textDocument/typeDefinition` handler that handles assembly/decompilation
 loading for `$metadata$` documents.
 
@@ -81,6 +79,21 @@ If using `lspconfig` this can be done like this:
 First configure omnisharp as per [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig/blob/master/CONFIG.md#omnisharp).
 
 Then to that config add `handlers` with custom handlers from this plugin.
+
+# For nvim < 0.11
+
+```lua
+
+local config = {
+  handlers = {
+    ["textDocument/definition"] = require('csharpls_extended').handler,
+    ["textDocument/typeDefinition"] = require('csharpls_extended').handler,
+  },
+  cmd = { csharpls },
+  -- rest of your settings
+}
+require'lspconfig'.csharp_ls.setup(config)
+```
 
 # For nvim 0.11
 
