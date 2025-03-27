@@ -49,18 +49,16 @@ end
 ---
 --- @param result buf_from_metadata.result
 --- @param client_id integer
+--- @param uri string
+--- @param buf integer | nil
 ---
 --- @return integer
-M.buf_from_metadata = function(result, client_id)
+M.buf_from_metadata = function(result, client_id, uri, buf)
     local normalized = string.gsub(result.source, "\r\n", "\n")
     local source_lines = utils.split(normalized, "\n")
 
-    -- normalize backwards slash to forwards slash
-    local normalized_source_name = string.gsub(result.assemblyName, "\\", "/")
-    local file_name = "/" .. normalized_source_name
-
     -- this will be /$metadata$/...
-    local bufnr = utils.get_or_create_buf(file_name)
+    local bufnr = buf or utils.get_or_create_buf(uri)
     -- TODO: check if bufnr == 0 -> error
     vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
     vim.api.nvim_set_option_value("readonly", false, { buf = bufnr })
@@ -90,8 +88,9 @@ end
 -- Returns: boolean whether any requests were made
 ---@param locations lsp.Location[]|lsp.LocationLink[]
 ---@param offset_encoding string offset_encoding for locations utf-8|utf-16|utf-32
+---@param buf integer|nil
 ---@return handle_locations.ret[]
-M.get_metadata = function(locations, offset_encoding)
+M.get_metadata = function(locations, offset_encoding, buf)
     local client = M.get_csharpls_client()
     if not client then
         -- TODO: Error?
@@ -102,6 +101,7 @@ M.get_metadata = function(locations, offset_encoding)
     for _, loc in pairs(locations) do
         -- url, get the message from csharp_ls
         local uri = utils.urldecode(loc.uri)
+
         --if has get messages
         local is_meta = M.is_lsp_url(uri)
         if not is_meta then
@@ -123,9 +123,8 @@ M.get_metadata = function(locations, offset_encoding)
         -- request_sync?
         -- if async, need to trigger when all are finished
         local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
-        --print(result.result.source)
         if not err and result ~= nil then
-            local bufnr = M.buf_from_metadata(result.result, client.id)
+            local bufnr = M.buf_from_metadata(result.result, client.id, uri, buf)
             -- change location name to the one returned from metadata
             -- alternative is to open buffer under location uri
             -- not sure which one is better
@@ -170,7 +169,12 @@ M.handle_locations = function(locations, offset_encoding)
             vim.api.nvim_command("copen")
             return true
         else
-            vim.lsp.util.jump_to_location(locations[1], offset_encoding)
+            if vim.fn.has('nvim-0.11') then
+                vim.lsp.util.show_document(locations[0], offset_encoding, { focus = true })
+            else
+                -- NOTE: for nvim < 0.11
+                vim.lsp.util.jump_to_location(locations[1], offset_encoding)
+            end
             return true
         end
     else
@@ -193,13 +197,57 @@ end
 M.lsp_definitions = function()
     local client = M.get_csharpls_client()
     if client then
-        local params = vim.lsp.util.make_position_params()
+        local params
+        if vim.fn.has('nvim-0.11') then
+            params = vim.lsp.util.make_position_params(0, 'utf-8')
+        else
+            params = vim.lsp.util.make_position_params()
+        end
         local handler = function(err, result, ctx, config)
             ctx.params = params
             M.handler(err, result, ctx, config)
         end
         client.request("textDocument/definition", params, handler)
     end
+end
+
+M.gen_virtual_file = function(location, buf)
+    local client = M.get_csharpls_client()
+    if not client then
+        -- TODO: Error?
+        return {}
+    end
+
+    -- url, get the message from csharp_ls
+    local uri = utils.urldecode(location)
+
+    local params = {
+        timeout = 5000,
+        textDocument = {
+            uri = uri,
+        },
+    }
+    -- request_sync?
+    -- if async, need to trigger when all are finished
+    local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
+    --print(result.result.source)
+    if not err and result ~= nil then
+        M.buf_from_metadata(result.result, client.id, uri, buf)
+    end
+end
+
+M.virtual_text_document = function(params)
+    local bufnr       = params.buf
+    local actual_path = params.file
+
+    M.gen_virtual_file(actual_path, bufnr)
+end
+
+M.buf_read_cmd_bind = function()
+    vim.api.nvim_create_autocmd({ "BufReadCmd" }, {
+        pattern = { "csharp:/*" },
+        callback = M.virtual_text_document
+    })
 end
 
 return M
