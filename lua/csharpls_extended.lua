@@ -169,7 +169,7 @@ M.handle_locations = function(locations, offset_encoding)
             vim.api.nvim_command("copen")
             return true
         else
-            if vim.fn.has('nvim-0.11') ~= 0 then
+            if vim.fn.has('nvim-0.11') == 1 then
                 vim.lsp.util.show_document(locations[0], offset_encoding, { focus = true })
             else
                 -- NOTE: for nvim < 0.11
@@ -198,7 +198,7 @@ M.lsp_definitions = function()
     local client = M.get_csharpls_client()
     if client then
         local params
-        if vim.fn.has('nvim-0.11') then
+        if vim.fn.has('nvim-0.11') == 1 then
             params = vim.lsp.util.make_position_params(0, 'utf-8')
         else
             params = vim.lsp.util.make_position_params()
