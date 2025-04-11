@@ -65,7 +65,7 @@ M.csharpls_telescope = function(opts)
             ctx.params = params
             M.telescope_handle(err, result, ctx, config, opts)
         end
-        client.request("textDocument/definition", params, handler, 0)
+        client:request("textDocument/definition", params, handler, 0)
     end
 end
 
