@@ -78,4 +78,20 @@ U.jump_to_location = function(location, bufnr)
     vim.api.nvim_win_set_cursor(0, { location.range.start.line + 1, location.range.start.character })
 end
 
+U.client_request_sync = function (client, a, b, c, d)
+    if vim.fn.has('nvim-0.11') == 1 then
+        client:request_sync(a, b, c, d)
+    else
+        client.request_sync(a, b, c, d)
+    end
+end
+
+U.client_request = function (client, a, b, c)
+    if vim.fn.has('nvim-0.11') == 1 then
+        client:request(a, b, c)
+    else
+        client.request(a, b, c)
+    end
+end
+
 return U
