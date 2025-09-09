@@ -122,7 +122,7 @@ M.get_metadata = function(locations, offset_encoding, buf)
         }
         -- request_sync?
         -- if async, need to trigger when all are finished
-        local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
+        local result, err = utils.client_request_sync(client, "csharp/metadata", params, 10000, 0)
         if not err and result ~= nil then
             local bufnr = M.buf_from_metadata(result.result, client.id, uri, buf)
             -- change location name to the one returned from metadata
@@ -207,7 +207,7 @@ M.lsp_definitions = function()
             ctx.params = params
             M.handler(err, result, ctx, config)
         end
-        client.request("textDocument/definition", params, handler)
+        utils.client_request(client, "textDocument/definition", params, handler)
     end
 end
 
@@ -229,7 +229,7 @@ M.gen_virtual_file = function(location, buf)
     }
     -- request_sync?
     -- if async, need to trigger when all are finished
-    local result, err = client.request_sync("csharp/metadata", params, 10000, 0)
+    local result, err = utils.client_request_sync(client, "csharp/metadata", params, 10000, 0)
     --print(result.result.source)
     if not err and result ~= nil then
         M.buf_from_metadata(result.result, client.id, uri, buf)
