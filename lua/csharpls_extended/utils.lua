@@ -80,17 +80,17 @@ end
 
 U.client_request_sync = function (client, method, params, timeout_ms, bufnr)
     if vim.fn.has('nvim-0.11') == 1 then
-        client:request_sync(method, params, timeout_ms, bufnr)
+        return client:request_sync(method, params, timeout_ms, bufnr)
     else
-        client.request_sync(method, params, timeout_ms, bufnr)
+        return client.request_sync(method, params, timeout_ms, bufnr)
     end
 end
 
 U.client_request = function (client, method, params, handler, bufnr)
     if vim.fn.has('nvim-0.11') == 1 then
-        client:request(method, params, handler, bufnr)
+        return client:request(method, params, handler, bufnr)
     else
-        client.request(method, params, handler, bufnr)
+        return client.request(method, params, handler, bufnr)
     end
 end
 
