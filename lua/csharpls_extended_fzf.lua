@@ -33,7 +33,7 @@ M.fzf_handle = function(_, result, ctx, _, opts)
     M.fzf_handle_location(locations, offset_encoding, opts)
 end
 
-M.csharpls_fzf = function(opts)
+M.fzf = function(opts)
     local client = csharpls_extend.get_csharpls_client()
     if client then
         local params
@@ -45,3 +45,5 @@ M.csharpls_fzf = function(opts)
         client:request("textDocument/definition", params, handler, 0)
     end
 end
+
+return M
