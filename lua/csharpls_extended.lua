@@ -32,7 +32,7 @@ end
 -- get client
 --- @return vim.lsp.Client | nil
 M.get_csharpls_client = function()
-    local clients = vim.lsp.get_clients({ buffer = 0 })
+    local clients = vim.lsp.get_active_clients({ bufnr = 0 })
     for _, client in pairs(clients) do
         if client.name == M.client_name then
             return client
@@ -148,7 +148,7 @@ end
 --- @param result lsp.Location | lsp.Location[]
 --- @return lsp.Location[]
 M.textdocument_definition_to_locations = function(result)
-    if not vim.islist(result) then
+    if not vim.tbl_islist(result) then
         return { result }
     end
 

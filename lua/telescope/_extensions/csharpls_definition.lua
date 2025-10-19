@@ -14,6 +14,7 @@ local M = {
 --- @param opts any
 M.telescope_handle_location = function(locations, offset_encoding, opts)
     local fetched = csharpls_extend.get_metadata(locations, offset_encoding)
+    opts = opts or {}
 
     if vim.tbl_isempty(fetched) then
         vim.notify("No locations found")
