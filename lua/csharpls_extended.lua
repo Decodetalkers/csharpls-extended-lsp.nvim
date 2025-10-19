@@ -1,4 +1,5 @@
 local utils = require("csharpls_extended.utils")
+local fzf = require("fzf-lua.fzf_csharpls")
 
 local M = {}
 
@@ -249,5 +250,7 @@ M.buf_read_cmd_bind = function()
         callback = M.virtual_text_document
     })
 end
+
+M.fzf = fzf.fzf_csharpls
 
 return M
