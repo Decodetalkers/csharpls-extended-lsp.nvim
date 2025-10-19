@@ -21,11 +21,7 @@ M.telescope_handle_location = function(locations, offset_encoding, opts)
         return
     end
     if #locations == 1 then
-        if vim.fn.has('nvim-0.11') == 1 then
-            vim.lsp.util.show_document(fetched[1], offset_encoding, { focus = true })
-        else
-            vim.lsp.util.jump_to_location(fetched[1], offset_encoding)
-        end
+        vim.lsp.util.show_document(fetched[1], offset_encoding, { focus = true })
         return
     end
 
@@ -57,11 +53,7 @@ M.csharpls_telescope = function(opts)
     local client = csharpls_extend.get_csharpls_client()
     if client then
         local params
-        if vim.fn.has('nvim-0.11') == 1 then
-            params = vim.lsp.util.make_position_params(0, 'utf-8')
-        else
-            params = vim.lsp.util.make_position_params()
-        end
+        params = vim.lsp.util.make_position_params(0, 'utf-8')
         local handler = function(err, result, ctx, config)
             ctx.params = params
             M.telescope_handle(err, result, ctx, config, opts)
