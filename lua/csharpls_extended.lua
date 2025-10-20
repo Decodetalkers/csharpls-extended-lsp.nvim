@@ -34,8 +34,6 @@ end
 M.get_csharpls_client = function()
     local clients = vim.lsp.get_clients({ name = M.client_name --[[, bufnr = 0--]] })
 
-    vim.print("get_csharpls_client: " .. #clients)
-
     return clients[1] -- TODO: What if there is more than one client attached?
 end
 
@@ -228,9 +226,6 @@ end
 M.virtual_text_document = function(params)
     local bufnr       = params.buf
     local actual_path = params.file
-
-    vim.print("virtual_text_document:")
-    vim.print(params)
 
     M.gen_virtual_file(actual_path, bufnr)
 end
