@@ -23,7 +23,9 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
         return
     end
 
-    -- Inherit from "base" instead of "buffer_or_file"
+    -- Helper function to find a metadata location object given "<filename>@<line number>"
+    -- Is there a better way to pass a location into fzf_exec? So the action can just pull the
+    -- required metadata directly from the selection?
     local getLocationFromString = function(stringLocation)
         local splits = vim.split(stringLocation, "@")
         local path = splits[1]
@@ -38,8 +40,9 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
         return location
     end
 
+    -- Custom previewer that uses csharpls_extended api to generate a buffer for the
+    -- preview window
     local builtin = require("fzf-lua.previewer.builtin")
-    -- Inherit from "base" instead of "buffer_or_file"
     local CSharpLSExPreviewer = builtin.base:extend()
 
     function CSharpLSExPreviewer:new(o, popts, fzf_win)
@@ -60,7 +63,7 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
 
             vim.api.nvim_win_set_cursor(self.win.preview_winid, { location.lnum, location.col })
         else
-            vim.print("Error, location is nil")
+            vim.print("csharpls_extended: ERROR: location is nil")
         end
     end
 
@@ -86,9 +89,9 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
                 if location ~= nil then
                     vim.lsp.util.show_document(location, offset_encoding, { focus = true })
                 else
-                    vim.print("ERROR: location not found in results: ")
-                    vim.print(arg)
-                    vim.print(fetched)
+                    vim.print("csharpls_extended: ERROR: location not found in results: ")
+                    -- vim.print(arg)
+                    -- vim.print(fetched)
                 end
             end
         },
@@ -111,8 +114,7 @@ M.fzf = function(opts)
     local client = csharpls_extend.get_csharpls_client()
     if client then
         -- vim.print("csharpls_fzf has client")
-        local params
-        params = vim.lsp.util.make_position_params(0, 'utf-8')
+        local params = vim.lsp.util.make_position_params(0, 'utf-8')
         -- vim.print("csharpls_fzf params: " .. tostring(params))
         local handler = function(err, result, ctx, config)
             -- vim.print("csharpls_handler")
@@ -121,6 +123,8 @@ M.fzf = function(opts)
             M.fzf_handle(err, result, ctx, config, opts)
         end
         client:request("textDocument/definition", params, handler, 0)
+    else
+        vim.print("csharpls_extended: ERROR: Client not found")
     end
 end
 
