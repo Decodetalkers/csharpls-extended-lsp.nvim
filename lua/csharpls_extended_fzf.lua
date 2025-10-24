@@ -5,12 +5,19 @@ local M = {
     title = "csharpls definition"
 };
 
-
 --- @param locations lsp.Location[] | lsp.LocationLink[]
 --- @param offset_encoding string
 --- @param opts any
 M.fzf_handle_location = function(locations, offset_encoding, opts)
     local fetched = csharpls_extend.get_metadata(locations, offset_encoding)
+    local lines = {}
+    for i, loc in pairs(fetched) do
+        loc.index = i
+        local path = vim.split(loc.filename, '/', { trimempty = true })
+        local filename = path[#path]
+        table.insert(lines, tostring(i) .. '\t' .. filename .. ": " .. vim.trim(loc.text))
+    end
+
     opts = opts or {}
 
     if vim.tbl_isempty(fetched) then
@@ -21,23 +28,6 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
     if #locations == 1 then
         vim.lsp.util.show_document(fetched[1], offset_encoding, { focus = true })
         return
-    end
-
-    -- Helper function to find a metadata location object given "<filename>@<line number>"
-    -- Is there a better way to pass a location into fzf_exec? So the action can just pull the
-    -- required metadata directly from the selection?
-    local getLocationFromString = function(stringLocation)
-        local splits = vim.split(stringLocation, "@")
-        local path = splits[1]
-        local lineNum = splits[2]
-        local location = nil
-        for _, loc in pairs(fetched) do
-            if loc.filename == path and loc.lnum == tonumber(lineNum) then
-                location = loc
-                break
-            end
-        end
-        return location
     end
 
     -- Custom previewer that uses csharpls_extended api to generate a buffer for the
@@ -52,7 +42,7 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
     end
 
     function CSharpLSExPreviewer:populate_preview_buf(entry_str)
-        local location = getLocationFromString(entry_str)
+        local location = GetLocationFromEntryBuf(entry_str, fetched)
         if (location ~= nil) then
             local tmpbuf = self:get_tmp_buffer()
             csharpls_extend.gen_virtual_file(location.filename, tmpbuf)
@@ -76,27 +66,42 @@ M.fzf_handle_location = function(locations, offset_encoding, opts)
         return vim.tbl_extend("force", self.winopts, new_winopts)
     end
 
-    fzf.fzf_exec(function(cb)
-        for _, loc in pairs(fetched) do
-            cb(loc.filename .. "@" .. loc.lnum)
-        end
-        cb()
-    end, {
-        prompt = "csharpls: ",
-        actions = {
-            ["default"] = function(arg, _)
-                local location = getLocationFromString(arg[1])
-                if location ~= nil then
-                    vim.lsp.util.show_document(location, offset_encoding, { focus = true })
-                else
-                    vim.print("csharpls_extended: ERROR: location not found in results: ")
-                    -- vim.print(arg)
-                    -- vim.print(fetched)
-                end
+    function GetLocationFromIndex(strIndex, array)
+        vim.print("GetLocationFromIndex: ")
+        local index = tonumber(strIndex)
+        for _, loc in pairs(array) do
+            if loc.index == index then
+                return loc
             end
-        },
-        previewer = CSharpLSExPreviewer,
-    })
+        end
+        return nil
+    end
+
+    function GetLocationFromEntryBuf(buf, array)
+        local index, _ = unpack(vim.split(buf, '\t', { trimempty = true }))
+        return GetLocationFromIndex(index, array)
+    end
+
+    fzf.fzf_exec(
+        lines, {
+            fzf_opts = { ['--delimiter'] = '\t', ['--with-nth'] = '2' },
+            prompt = "csharpls: ",
+            actions = {
+                ["default"] = function(arg, _)
+                    local selection = arg[1]
+                    local location = GetLocationFromEntryBuf(selection, fetched)
+                    if location ~= nil then
+                        vim.lsp.util.show_document(location, offset_encoding, { focus = true })
+                    else
+                        vim.print("csharpls_extended: ERROR: location not found in results: ")
+                    end
+                end
+            },
+            previewer = CSharpLSExPreviewer,
+            layout = {
+                preset = "telescope"
+            }
+        })
 end
 
 M.fzf_handle = function(_, result, ctx, _, opts)
