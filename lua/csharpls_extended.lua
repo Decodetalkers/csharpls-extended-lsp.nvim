@@ -32,14 +32,9 @@ end
 -- get client
 --- @return vim.lsp.Client | nil
 M.get_csharpls_client = function()
-    local clients = vim.lsp.get_clients({ buffer = 0 })
-    for _, client in pairs(clients) do
-        if client.name == M.client_name then
-            return client
-        end
-    end
+    local clients = vim.lsp.get_clients({ name = M.client_name --[[, bufnr = 0--]] })
 
-    return nil
+    return clients[1] -- TODO: What if there is more than one client attached?
 end
 
 --- @class buf_from_metadata.result
@@ -169,12 +164,7 @@ M.handle_locations = function(locations, offset_encoding)
             vim.api.nvim_command("copen")
             return true
         else
-            if vim.fn.has('nvim-0.11') == 1 then
-                vim.lsp.util.show_document(locations[0], offset_encoding, { focus = true })
-            else
-                -- NOTE: for nvim < 0.11
-                vim.lsp.util.jump_to_location(locations[1], offset_encoding)
-            end
+            vim.lsp.util.show_document(locations[1], offset_encoding, { focus = true })
             return true
         end
     else
@@ -198,11 +188,7 @@ M.lsp_definitions = function()
     local client = M.get_csharpls_client()
     if client then
         local params
-        if vim.fn.has('nvim-0.11') == 1 then
-            params = vim.lsp.util.make_position_params(0, 'utf-8')
-        else
-            params = vim.lsp.util.make_position_params()
-        end
+        params = vim.lsp.util.make_position_params(0, 'utf-8')
         local handler = function(err, result, ctx, config)
             ctx.params = params
             M.handler(err, result, ctx, config)
@@ -214,6 +200,7 @@ end
 M.gen_virtual_file = function(location, buf)
     local client = M.get_csharpls_client()
     if not client then
+        vim.print("gen_virtual_file: csharp_ls client not attached")
         -- TODO: Error?
         return {}
     end

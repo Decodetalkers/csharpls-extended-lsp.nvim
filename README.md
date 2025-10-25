@@ -80,21 +80,6 @@ First configure omnisharp as per [nvim-lspconfig](https://github.com/neovim/nvim
 
 Then to that config add `handlers` with custom handlers from this plugin.
 
-# For nvim < 0.11
-
-```lua
-
-local config = {
-  handlers = {
-    ["textDocument/definition"] = require('csharpls_extended').handler,
-    ["textDocument/typeDefinition"] = require('csharpls_extended').handler,
-  },
-  cmd = { csharpls },
-  -- rest of your settings
-}
-require'lspconfig'.csharp_ls.setup(config)
-```
-
 # For nvim 0.11
 
 ```lua
@@ -102,8 +87,13 @@ require'lspconfig'.csharp_ls.setup(config)
 require("csharpls_extended").buf_read_cmd_bind()
 ```
 
+# For fzf-lua
 
-## Telescope
+```lua
+vim.keymap.set('n', 'gd', require('csharpls_extended_fzf').fzf,)
+```
+
+## Telescope (DEPRECATED - Telescope is not actively maintained)
 
 ```lua
 require("telescope").load_extension("csharpls_definition")
