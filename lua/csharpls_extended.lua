@@ -211,6 +211,8 @@ M.lsp_definitions = function()
     end
 end
 
+local lala_log = require("lala_log")
+
 M.gen_virtual_file = function(location, buf)
     local client = M.get_csharpls_client()
     if not client then

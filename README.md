@@ -3,6 +3,35 @@
 Extended `textDocument/definition` and `textDocument/typeDefinition` handler that handles assembly/decompilation
 loading for `$metadata$` documents.
 
+## NOTE
+
+Now decompile action is hidden behind feature "metadata-uris", so you need add such config in your nvim lspconfig
+
+```lua
+    -- ....
+    if lsp == "csharp_ls" then
+        opts = {
+            on_attach = on_attach,
+            capabilities = capabilities,
+            cmd = function(dispatchers, config)
+                --- NOTE: csharp-ls is using rpc to communicate with editor, not stdout, so you need to write it in this way
+                return vim.lsp.rpc.start({ 'csharp-ls', '--features', 'metadata-uris' }, dispatchers, {
+                    -- csharp-ls attempt to locate sln, slnx or csproj files from cwd, so set cwd to root directory.
+                    -- If cmd_cwd is provided, use it instead.
+                    cwd = config.cmd_cwd or config.root_dir,
+                    env = config.cmd_env,
+                    detached = config.detached,
+                })
+            end,
+            flags = {
+                --allow_incremental_sync = false,
+            },
+        }
+    end
+    -- ....
+
+```
+
 ## How it works
 
 By providing an alternate handler for `textDocument/definition` the plugin listens
