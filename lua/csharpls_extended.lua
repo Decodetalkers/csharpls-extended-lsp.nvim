@@ -169,7 +169,7 @@ M.handle_locations = function(locations, offset_encoding)
             vim.api.nvim_command("copen")
             return true
         else
-            if vim.fn.has('nvim-0.11') == 1 then
+            if vim.fn.has("nvim-0.11") == 1 then
                 vim.lsp.util.show_document(locations[0], offset_encoding, { focus = true })
             else
                 -- NOTE: for nvim < 0.11
@@ -198,8 +198,8 @@ M.lsp_definitions = function()
     local client = M.get_csharpls_client()
     if client then
         local params
-        if vim.fn.has('nvim-0.11') == 1 then
-            params = vim.lsp.util.make_position_params(0, 'utf-8')
+        if vim.fn.has("nvim-0.11") == 1 then
+            params = vim.lsp.util.make_position_params(0, "utf-8")
         else
             params = vim.lsp.util.make_position_params()
         end
@@ -239,7 +239,7 @@ M.gen_virtual_file = function(location, buf)
 end
 
 M.virtual_text_document = function(params)
-    local bufnr       = params.buf
+    local bufnr = params.buf
     local actual_path = params.file
 
     M.gen_virtual_file(actual_path, bufnr)
@@ -248,7 +248,7 @@ end
 M.buf_read_cmd_bind = function()
     vim.api.nvim_create_autocmd({ "BufReadCmd" }, {
         pattern = { "csharp:/*" },
-        callback = M.virtual_text_document
+        callback = M.virtual_text_document,
     })
 end
 
