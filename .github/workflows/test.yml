@@ -17,7 +17,7 @@ jobs:
         neovim_version: ['nightly']
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run tests
         uses: nvim-neorocks/nvim-busted-action@v1
         with:
